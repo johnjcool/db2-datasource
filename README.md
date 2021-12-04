@@ -1,6 +1,6 @@
 # Grafana Data Source Backend Plugin Template
 
-[![Build](https://github.com/grafana/grafana-starter-datasource-backend/workflows/CI/badge.svg)](https://github.com/grafana/grafana-datasource-backend/actions?query=workflow%3A%22CI%22)
+[![Build](https://github.com/johnjcool/db2-datasource/workflows/CI/badge.svg)](https://github.com/johnjcool/db2-datasource/actions?query=workflow%3A%22CI%22)
 
 This template is a starting point for building Grafana Data Source Backend Plugins
 
