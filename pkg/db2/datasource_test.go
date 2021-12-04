@@ -1,16 +1,15 @@
-package plugin_test
+package db2
 
 import (
 	"context"
 	"testing"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-starter-datasource-backend/pkg/plugin"
 )
 
 // This is where the tests for the datasource backend live.
 func TestQueryData(t *testing.T) {
-	ds := plugin.Db2Datasource{}
+	ds := Db2Datasource{}
 
 	resp, err := ds.QueryData(
 		context.Background(),

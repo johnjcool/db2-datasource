@@ -5,7 +5,7 @@ import (
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
-	"github.com/grafana/grafana-starter-datasource-backend/pkg/plugin"
+	"github.com/johnjcool/db2-datasource/pkg/db2"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	// from Grafana to create different instances of SampleDatasource (per datasource
 	// ID). When datasource configuration changed Dispose method will be called and
 	// new datasource instance created using NewDb2Datasource factory.
-	if err := datasource.Manage("johnjcool-db2-datasource", plugin.NewDb2Datasource, datasource.ManageOpts{}); err != nil {
+	if err := datasource.Manage("johnjcool-db2-datasource", db2.NewDb2Datasource, datasource.ManageOpts{}); err != nil {
 		log.DefaultLogger.Error(err.Error())
 		os.Exit(1)
 	}

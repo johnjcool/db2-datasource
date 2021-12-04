@@ -1,4 +1,4 @@
-module github.com/grafana/grafana-starter-datasource-backend
+module github.com/johnjcool/db2-datasource
 
 go 1.16
 
