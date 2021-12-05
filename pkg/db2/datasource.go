@@ -2,193 +2,79 @@ package db2
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
-	"math/rand"
-	"time"
+	"fmt"
+	"strings"
+
+	_ "github.com/ibmdb/go_ibm_db"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/log"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
-	"github.com/grafana/grafana-plugin-sdk-go/live"
+	"github.com/grafana/grafana-plugin-sdk-go/data/sqlutil"
+	"github.com/grafana/sqlds/v2"
+	"github.com/pkg/errors"
 )
 
-// Make sure SampleDatasource implements required interfaces. This is important to do
-// since otherwise we will only get a not implemented error response from plugin in
-// runtime. In this example datasource instance implements backend.QueryDataHandler,
-// backend.CheckHealthHandler, backend.StreamHandler interfaces. Plugin should not
-// implement all these interfaces - only those which are required for a particular task.
-// For example if plugin does not need streaming functionality then you are free to remove
-// methods that implement backend.StreamHandler. Implementing instancemgmt.InstanceDisposer
-// is useful to clean up resources used by previous datasource instance when a new datasource
-// instance created upon datasource settings changed.
-var (
-	_ backend.QueryDataHandler      = (*Db2Datasource)(nil)
-	_ backend.CheckHealthHandler    = (*Db2Datasource)(nil)
-	_ backend.StreamHandler         = (*Db2Datasource)(nil)
-	_ instancemgmt.InstanceDisposer = (*Db2Datasource)(nil)
-)
-
-// NewDb2Datasource creates a new datasource instance.
-func NewDb2Datasource(_ backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-	return &Db2Datasource{}, nil
+type Db2DatasourceIface interface {
+	sqlds.Driver
+	Schemas(ctx context.Context, options sqlds.Options) ([]string, error)
+	Tables(ctx context.Context, options sqlds.Options) ([]string, error)
+	Columns(ctx context.Context, options sqlds.Options) ([]string, error)
 }
 
-// Db2Datasource which can respond to data queries, reports
-// its health and has streaming skills.
 type Db2Datasource struct{}
 
-// Dispose here tells plugin SDK that plugin wants to clean up resources when a new instance
-// created. As soon as datasource settings change detected by SDK old datasource instance will
-// be disposed and a new one will be created using NewDb2Datasource factory function.
-func (d *Db2Datasource) Dispose() {
-	// Clean up datasource instance resources.
+func New() *Db2Datasource {
+	return &Db2Datasource{}
 }
 
-// QueryData handles multiple queries and returns multiple responses.
-// req contains the queries []DataQuery (where each query contains RefID as a unique identifier).
-// The QueryDataResponse contains a map of RefID to the response for each query, and each response
-// contains Frames ([]*Frame).
-func (d *Db2Datasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
-	log.DefaultLogger.Info("QueryData called", "request", req)
-
-	// create response struct
-	response := backend.NewQueryDataResponse()
-
-	// loop over queries and execute them individually.
-	for _, q := range req.Queries {
-		res := d.query(ctx, req.PluginContext, q)
-
-		// save the response in a hashmap
-		// based on with RefID as identifier
-		response.Responses[q.RefID] = res
+func (ds *Db2Datasource) Settings(_ backend.DataSourceInstanceSettings) sqlds.DriverSettings {
+	return sqlds.DriverSettings{
+		FillMode: &data.FillMissing{
+			Mode: data.FillModeNull,
+		},
 	}
-
-	return response, nil
 }
 
-type queryModel struct {
-	WithStreaming bool `json:"withStreaming"`
-}
+func (ds *Db2Datasource) Connect(config backend.DataSourceInstanceSettings, _ json.RawMessage) (*sql.DB, error) {
 
-func (d *Db2Datasource) query(_ context.Context, pCtx backend.PluginContext, query backend.DataQuery) backend.DataResponse {
-	response := backend.DataResponse{}
+	urlParts := strings.Split(config.URL, ":")
 
-	// Unmarshal the JSON into our queryModel.
-	var qm queryModel
-
-	response.Error = json.Unmarshal(query.JSON, &qm)
-	if response.Error != nil {
-		return response
-	}
-
-	// create data frame response.
-	frame := data.NewFrame("response")
-
-	// add fields.
-	frame.Fields = append(frame.Fields,
-		data.NewField("time", nil, []time.Time{query.TimeRange.From, query.TimeRange.To}),
-		data.NewField("values", nil, []int64{10, 20}),
+	db, err := sql.Open(
+		"go_ibm_db",
+		fmt.Sprintf(
+			"HOSTNAME=%s;PORT=%s;DATABASE=%s;UID=%s;PWD=%s",
+			urlParts[0],
+			urlParts[1],
+			config.Database,
+			config.User,
+			config.DecryptedSecureJSONData["password"],
+		),
 	)
 
-	// If query called with streaming on then return a channel
-	// to subscribe on a client-side and consume updates from a plugin.
-	// Feel free to remove this if you don't need streaming for your datasource.
-	if qm.WithStreaming {
-		channel := live.Channel{
-			Scope:     live.ScopeDatasource,
-			Namespace: pCtx.DataSourceInstanceSettings.UID,
-			Path:      "stream",
-		}
-		frame.SetMeta(&data.FrameMeta{Channel: channel.String()})
+	if err != nil {
+		return nil, errors.WithMessage(err, "Failed to connect to database. Is the hostname and port correct?")
 	}
-
-	// add the frames to the response.
-	response.Frames = append(response.Frames, frame)
-
-	return response
+	return db, nil
 }
 
-// CheckHealth handles health checks sent from Grafana to the plugin.
-// The main use case for these health checks is the test button on the
-// datasource configuration page which allows users to verify that
-// a datasource is working as expected.
-func (d *Db2Datasource) CheckHealth(_ context.Context, req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
-	log.DefaultLogger.Info("CheckHealth called", "request", req)
-
-	var status = backend.HealthStatusOk
-	var message = "Data source is working"
-
-	if rand.Int()%2 == 0 {
-		status = backend.HealthStatusError
-		message = "randomized error"
-	}
-
-	return &backend.CheckHealthResult{
-		Status:  status,
-		Message: message,
-	}, nil
+func (s *Db2Datasource) Converters() (sc []sqlutil.Converter) {
+	return sc
 }
 
-// SubscribeStream is called when a client wants to connect to a stream. This callback
-// allows sending the first message.
-func (d *Db2Datasource) SubscribeStream(_ context.Context, req *backend.SubscribeStreamRequest) (*backend.SubscribeStreamResponse, error) {
-	log.DefaultLogger.Info("SubscribeStream called", "request", req)
+// needed for auto completion
+func (s *Db2Datasource) Schemas(ctx context.Context, options sqlds.Options) ([]string, error) {
 
-	status := backend.SubscribeStreamStatusPermissionDenied
-	if req.Path == "stream" {
-		// Allow subscribing only on expected path.
-		status = backend.SubscribeStreamStatusOK
-	}
-	return &backend.SubscribeStreamResponse{
-		Status: status,
-	}, nil
+	return []string{}, nil
 }
 
-// RunStream is called once for any open channel.  Results are shared with everyone
-// subscribed to the same channel.
-func (d *Db2Datasource) RunStream(ctx context.Context, req *backend.RunStreamRequest, sender *backend.StreamSender) error {
-	log.DefaultLogger.Info("RunStream called", "request", req)
+func (s *Db2Datasource) Tables(ctx context.Context, options sqlds.Options) ([]string, error) {
 
-	// Create the same data frame as for query data.
-	frame := data.NewFrame("response")
-
-	// Add fields (matching the same schema used in QueryData).
-	frame.Fields = append(frame.Fields,
-		data.NewField("time", nil, make([]time.Time, 1)),
-		data.NewField("values", nil, make([]int64, 1)),
-	)
-
-	counter := 0
-
-	// Stream data frames periodically till stream closed by Grafana.
-	for {
-		select {
-		case <-ctx.Done():
-			log.DefaultLogger.Info("Context done, finish streaming", "path", req.Path)
-			return nil
-		case <-time.After(time.Second):
-			// Send new data periodically.
-			frame.Fields[0].Set(0, time.Now())
-			frame.Fields[1].Set(0, int64(10*(counter%2+1)))
-
-			counter++
-
-			err := sender.SendFrame(frame, data.IncludeAll)
-			if err != nil {
-				log.DefaultLogger.Error("Error sending frame", "error", err)
-				continue
-			}
-		}
-	}
+	return []string{}, nil
 }
 
-// PublishStream is called when a client sends a message to the stream.
-func (d *Db2Datasource) PublishStream(_ context.Context, req *backend.PublishStreamRequest) (*backend.PublishStreamResponse, error) {
-	log.DefaultLogger.Info("PublishStream called", "request", req)
+func (s *Db2Datasource) Columns(ctx context.Context, options sqlds.Options) ([]string, error) {
 
-	// Do not allow publishing at all.
-	return &backend.PublishStreamResponse{
-		Status: backend.PublishStreamStatusPermissionDenied,
-	}, nil
+	return []string{}, nil
 }

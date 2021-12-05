@@ -1,9 +1,9 @@
 import { DataSourceInstanceSettings } from '@grafana/data';
 import { DataSourceWithBackend } from '@grafana/runtime';
-import { MyDataSourceOptions, MyQuery } from './types';
+import { Db2DataSourceOptions, Db2Query } from './types';
 
-export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
-  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
+export class DataSource extends DataSourceWithBackend<Db2Query, Db2DataSourceOptions> {
+  constructor(instanceSettings: DataSourceInstanceSettings<Db2DataSourceOptions>) {
     super(instanceSettings);
   }
 }
