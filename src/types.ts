@@ -15,12 +15,14 @@ export const defaultQuery: Partial<Db2Query> = {
  * These are options configured for each DataSource instance.
  */
 export interface Db2DataSourceOptions extends DataSourceJsonData {
-  path?: string;
+  url?: string;
+  database?: string;
+  user?: string;
 }
 
 /**
  * Value that is used in the backend, but never sent over HTTP to the frontend
  */
 export interface Db2SecureJsonData {
-  apiKey?: string;
+  password?: string;
 }

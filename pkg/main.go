@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	log.DefaultLogger.Info("Starting DB2 plugin....")
 
 	s := db2.New()
 	ds := sqlds.NewDatasource(s)

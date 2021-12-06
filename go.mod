@@ -6,6 +6,7 @@ require (
 	github.com/grafana/grafana-plugin-sdk-go v0.120.0
 	github.com/grafana/sqlds/v2 v2.3.3
 	github.com/ibmdb/go_ibm_db v0.4.1
+	github.com/magefile/mage v1.11.0
 	github.com/pkg/errors v0.9.1
 )
 
@@ -24,7 +25,6 @@ require (
 	github.com/hashicorp/go-plugin v1.4.3 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/magefile/mage v1.11.0 // indirect
 	github.com/mattetti/filebuffer v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.4 // indirect
 	github.com/mattn/go-isatty v0.0.10 // indirect

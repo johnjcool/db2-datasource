@@ -10,37 +10,53 @@ interface Props extends DataSourcePluginOptionsEditorProps<Db2DataSourceOptions>
 interface State {}
 
 export class ConfigEditor extends PureComponent<Props, State> {
-  onPathChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     const jsonData = {
       ...options.jsonData,
-      path: event.target.value,
+      url: event.target.value,
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+  onDatabaseChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onOptionsChange, options } = this.props;
+    const jsonData = {
+      ...options.jsonData,
+      database: event.target.value,
+    };
+    onOptionsChange({ ...options, jsonData });
+  };
+  onUserChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { onOptionsChange, options } = this.props;
+    const jsonData = {
+      ...options.jsonData,
+      user: event.target.value,
     };
     onOptionsChange({ ...options, jsonData });
   };
 
   // Secure field (only sent to the backend)
-  onAPIKeyChange = (event: ChangeEvent<HTMLInputElement>) => {
+  onPasswordChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
       ...options,
       secureJsonData: {
-        apiKey: event.target.value,
+        password: event.target.value,
       },
     });
   };
 
-  onResetAPIKey = () => {
+  onResetPassword = () => {
     const { onOptionsChange, options } = this.props;
     onOptionsChange({
       ...options,
       secureJsonFields: {
         ...options.secureJsonFields,
-        apiKey: false,
+        password: false,
       },
       secureJsonData: {
         ...options.secureJsonData,
-        apiKey: '',
+        password: '',
       },
     });
   };
@@ -49,31 +65,46 @@ export class ConfigEditor extends PureComponent<Props, State> {
     const { options } = this.props;
     const { jsonData, secureJsonFields } = options;
     const secureJsonData = (options.secureJsonData || {}) as Db2SecureJsonData;
-
     return (
       <div className="gf-form-group">
         <div className="gf-form">
           <FormField
-            label="Path"
+            label="Url"
             labelWidth={6}
             inputWidth={20}
-            onChange={this.onPathChange}
-            value={jsonData.path || ''}
-            placeholder="json field returned to frontend"
+            onChange={this.onUrlChange}
+            value={jsonData.url || ''}
           />
         </div>
-
+        <div className="gf-form">
+          <FormField
+            label="Database"
+            labelWidth={6}
+            inputWidth={20}
+            onChange={this.onDatabaseChange}
+            value={jsonData.database || ''}
+          />
+        </div>
+        <div className="gf-form">
+          <FormField
+            label="User"
+            labelWidth={6}
+            inputWidth={20}
+            onChange={this.onUserChange}
+            value={jsonData.user || ''}
+          />
+        </div>
         <div className="gf-form-inline">
           <div className="gf-form">
             <SecretFormField
               isConfigured={(secureJsonFields && secureJsonFields.apiKey) as boolean}
-              value={secureJsonData.apiKey || ''}
-              label="API Key"
+              value={secureJsonData.password || ''}
+              label="Password"
               placeholder="secure json field (backend only)"
               labelWidth={6}
               inputWidth={20}
-              onReset={this.onResetAPIKey}
-              onChange={this.onAPIKeyChange}
+              onReset={this.onResetPassword}
+              onChange={this.onPasswordChange}
             />
           </div>
         </div>
