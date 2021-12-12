@@ -1,4 +1,4 @@
-FROM grafana/grafana:8.2.3-ubuntu
+FROM grafana/grafana:8.3.2-ubuntu
 
 USER root
 

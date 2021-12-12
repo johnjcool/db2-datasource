@@ -17,7 +17,9 @@
     "@grafana/toolkit": "latest",
     "@grafana/runtime": "latest",
     "@grafana/ui": "latest",
-    "@types/lodash": "latest"
+    "@types/lodash": "latest",
+    "@types/grafana": "https://git@github.com/CorpGlory/types-grafana.git",
+    "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks"
   },
   "resolutions": {
     "rxjs": "7.3.0"
