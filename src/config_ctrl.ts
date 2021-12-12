@@ -2,7 +2,7 @@ import { DataSourceSrv, getDataSourceSrv } from '@grafana/runtime';
 import { find } from 'lodash';
 import { createChangeHandler, createResetHandler, PasswordFieldEnum } from 'utils';
 
-export class PostgresConfigCtrl {
+export class Db2ConfigCtrl {
   static templateUrl = 'partials/config.html';
 
   // Set through angular bindings

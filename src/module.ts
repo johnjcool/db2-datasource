@@ -1,8 +1,8 @@
 import { DataSourcePlugin } from '@grafana/data';
 import { Db2Options, Db2Query } from './types';
-import Db2QueryModel from 'db2_query_model';
 import { Db2Datasource } from 'datasource';
 import { Db2QueryCtrl } from 'query_ctrl';
+import { Db2ConfigCtrl } from 'config_ctrl';
 
 const defaultQuery = `SELECT
   extract(epoch from time_column) AS time,
@@ -27,6 +27,6 @@ class Db2AnnotationsQueryCtrl {
 }
 
 export const plugin = new DataSourcePlugin<Db2Datasource, Db2Query, Db2Options>(Db2Datasource)
-  .setConfigCtrl(Db2QueryModel)
+  .setConfigCtrl(Db2ConfigCtrl)
   .setQueryCtrl(Db2QueryCtrl)
   .setAnnotationQueryCtrl(Db2AnnotationsQueryCtrl);
