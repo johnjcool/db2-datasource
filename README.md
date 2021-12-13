@@ -74,6 +74,15 @@ A data source backend plugin consists of both frontend and backend components.
   go build -o dist/gpx_db2_linux_amd64 ./pkg
   ```
 
+### Run all together
+
+Build and run docker image:
+
+  ```bash
+  docker build -t johnjcool/grafana:8.3.2 .
+  docker run -p 3000:3000 -v "$(pwd)/dev/grafana.ini":/etc/grafana/grafana.ini -v "$(pwd)"/dist:/var/lib/grafana/plugins/johnjcool-db2-datasource johnjcool/grafana:8.3.2
+  ```
+
 ## Learn more
 
 - [Build a data source backend plugin tutorial](https://grafana.com/tutorials/build-a-data-source-backend-plugin)
