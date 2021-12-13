@@ -41,13 +41,13 @@ func (ds *Db2Datasource) Settings(_ backend.DataSourceInstanceSettings) sqlds.Dr
 func (ds *Db2Datasource) Connect(config backend.DataSourceInstanceSettings, _ json.RawMessage) (*sql.DB, error) {
 	content := map[string]string{}
 	_ = json.Unmarshal(config.JSONData, &content)
-	urlParts := strings.Split(content["url"], ":")
+	urlParts := strings.Split(config.URL, ":")
 	connection := fmt.Sprintf(
 		"HOSTNAME=%s;PORT=%s;DATABASE=%s;UID=%s;PWD=%s",
 		urlParts[0],
 		urlParts[1],
-		content["database"],
-		content["user"],
+		config.Database,
+		config.URL,
 		config.DecryptedSecureJSONData["password"],
 	)
 	log.DefaultLogger.Info("connection string:", connection)
