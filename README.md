@@ -76,12 +76,14 @@ A data source backend plugin consists of both frontend and backend components.
 
 ### Run all together
 
-Build and run docker image:
+1. Build and run docker image:
 
   ```bash
   docker build -t johnjcool/grafana:8.3.2 .
   docker run -p 3000:3000 -v "$(pwd)/dev/grafana.ini":/etc/grafana/grafana.ini -v "$(pwd)"/dist:/var/lib/grafana/plugins/johnjcool-db2-datasource johnjcool/grafana:8.3.2
   ```
+
+2. Open the browser on http://localhost:3000
 
 ## Learn more
 
