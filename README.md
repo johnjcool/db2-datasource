@@ -60,7 +60,7 @@ A data source backend plugin consists of both frontend and backend components.
 3. Install DB2 [clidriver](https://github.com/ibmdb/go_ibm_db#how-to-install-in-linuxmac):
 
   ```bash
-  cd %GOPATH%/go/pkg/mod/github.com/ibmdb/go_ibm_db@v0.4.1/installer
+  cd $GOPATH/pkg/mod/github.com/ibmdb/go_ibm_db@v0.4.1/installer
   go run setup.go
   export CGO_CFLAGS="-I$GOPATH/pkg/mod/github.com/ibmdb/clidriver/include"
   export CGO_LDFLAGS="-L$GOPATH/pkg/mod/github.com/ibmdb/clidriver/lib"
